@@ -20,6 +20,11 @@
     --accent-ink: #ffffff;
     --line: #c9d4cf;
     --danger: #a63a2b;
+    --screen-a: #27307a; --screen-b: #0f7a95; --screen-ink: #ffffff; --screen-muted: #c4d2f2; --screen-err: #ffb9ab;
+    --fn: #dbe7fb; --fn-ink: #1c4a93;
+    --opk: #d45f00; --opk-ink: #ffffff;
+    --clr: #fde0db; --clr-ink: #a63a2b;
+    --eq: #0d8a5f; --eq-ink: #ffffff;
     --font-display: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
     --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     color-scheme: light;
@@ -36,6 +41,11 @@
       --accent-ink: #06231c;
       --line: #0b0f0e;
       --danger: #f08a79;
+    --screen-a: #1a2255; --screen-b: #0b5568; --screen-ink: #f2f6ff; --screen-muted: #a9b9de; --screen-err: #ffb9ab;
+    --fn: #243756; --fn-ink: #9cc2ff;
+    --opk: #f08a2e; --opk-ink: #2a1300;
+    --clr: #4a2622; --clr-ink: #ff9d8c;
+    --eq: #2fcf93; --eq-ink: #04241a;
       color-scheme: dark;
     }
   }
@@ -50,6 +60,11 @@
     --accent-ink: #06231c;
     --line: #0b0f0e;
     --danger: #f08a79;
+    --screen-a: #1a2255; --screen-b: #0b5568; --screen-ink: #f2f6ff; --screen-muted: #a9b9de; --screen-err: #ffb9ab;
+    --fn: #243756; --fn-ink: #9cc2ff;
+    --opk: #f08a2e; --opk-ink: #2a1300;
+    --clr: #4a2622; --clr-ink: #ff9d8c;
+    --eq: #2fcf93; --eq-ink: #04241a;
     color-scheme: dark;
   }
 
@@ -78,7 +93,7 @@
     box-shadow: 0 1px 0 var(--line), 0 12px 32px -16px rgba(0, 0, 0, 0.35);
   }
 
-  .screen { display: flex; flex-direction: column; gap: 4px; padding: 4px 4px 0; }
+  .screen { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px 10px; border-radius: 14px; background: linear-gradient(135deg, var(--screen-a), var(--screen-b)); color: var(--screen-ink); }
   .screen-top { display: flex; align-items: center; gap: 8px; min-height: 32px; }
   .expr {
     flex: 1;
@@ -88,7 +103,7 @@
     text-align: right;
     font-family: var(--font-display);
     font-size: 1rem;
-    color: var(--muted);
+    color: var(--screen-muted);
     scrollbar-width: none;
   }
   .expr::-webkit-scrollbar { display: none; }
@@ -99,11 +114,11 @@
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: var(--muted);
+    color: var(--screen-muted);
     font: 500 1.1rem var(--font-body);
     cursor: pointer;
   }
-  .back:hover { background: var(--op); color: var(--ink); }
+  .back:hover { background: rgba(255, 255, 255, 0.16); color: var(--screen-ink); }
   .result {
     font-family: var(--font-display);
     font-weight: 500;
@@ -115,11 +130,12 @@
     font-variant-numeric: tabular-nums;
     scrollbar-width: none;
     min-height: 3.2rem;
+    color: var(--screen-ink);
   }
   .result::-webkit-scrollbar { display: none; }
   .result.m { font-size: 2.1rem; }
   .result.s { font-size: 1.6rem; }
-  .result.err { font-family: var(--font-body); font-size: 1.15rem; font-weight: 600; color: var(--danger); line-height: 2.6rem; }
+  .result.err { font-family: var(--font-body); font-size: 1.15rem; font-weight: 600; color: var(--screen-err); line-height: 2.6rem; }
 
   .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .key {
@@ -134,9 +150,10 @@
     transition: transform 60ms ease, filter 120ms ease;
     -webkit-tap-highlight-color: transparent;
   }
-  .key.op { background: var(--op); font-family: var(--font-body); font-weight: 600; }
-  .key.eq { background: var(--accent); color: var(--accent-ink); font-family: var(--font-body); font-weight: 600; box-shadow: none; }
-  .key.clear { color: var(--danger); font-family: var(--font-body); font-weight: 600; }
+  .key.op { background: var(--fn); color: var(--fn-ink); font-family: var(--font-body); font-weight: 600; }
+  .key.arith { background: var(--opk); color: var(--opk-ink); font-family: var(--font-body); font-weight: 600; font-size: 1.6rem; box-shadow: none; }
+  .key.eq { background: var(--eq); color: var(--eq-ink); font-family: var(--font-body); font-weight: 600; box-shadow: none; }
+  .key.clear { background: var(--clr); color: var(--clr-ink); font-family: var(--font-body); font-weight: 600; }
   .key:hover { filter: brightness(0.97); }
   .key:active, .key.flash { transform: translateY(2px); box-shadow: none; filter: brightness(0.92); }
   .key:focus-visible, .back:focus-visible, .h-clear:focus-visible, .h-item:focus-visible {
@@ -157,7 +174,7 @@
   }
   .h-item:hover { background: var(--op); }
   .h-item .e { font: 400 0.85rem var(--font-display); color: var(--muted); max-width: 100%; overflow-wrap: anywhere; }
-  .h-item .r { font: 500 1.1rem var(--font-display); font-variant-numeric: tabular-nums; }
+  .h-item .r { font: 500 1.1rem var(--font-display); font-variant-numeric: tabular-nums; color: var(--accent); }
   .h-empty { margin: 0; padding: 8px 0; font-size: 0.9rem; color: var(--muted); }
 
   @media (prefers-reduced-motion: reduce) { .key { transition: none; } }
@@ -177,22 +194,22 @@
       <button type="button" class="key clear" data-k="C" id="k-clear" aria-label="Clear all">C</button>
       <button type="button" class="key op" data-k="(" aria-label="Open bracket">(</button>
       <button type="button" class="key op" data-k=")" aria-label="Close bracket">)</button>
-      <button type="button" class="key op" data-k="÷" aria-label="Divide">÷</button>
+      <button type="button" class="key arith" data-k="÷" aria-label="Divide">÷</button>
 
       <button type="button" class="key" data-k="7">7</button>
       <button type="button" class="key" data-k="8">8</button>
       <button type="button" class="key" data-k="9">9</button>
-      <button type="button" class="key op" data-k="×" aria-label="Multiply">×</button>
+      <button type="button" class="key arith" data-k="×" aria-label="Multiply">×</button>
 
       <button type="button" class="key" data-k="4">4</button>
       <button type="button" class="key" data-k="5">5</button>
       <button type="button" class="key" data-k="6">6</button>
-      <button type="button" class="key op" data-k="−" aria-label="Subtract">−</button>
+      <button type="button" class="key arith" data-k="−" aria-label="Subtract">−</button>
 
       <button type="button" class="key" data-k="1">1</button>
       <button type="button" class="key" data-k="2">2</button>
       <button type="button" class="key" data-k="3">3</button>
-      <button type="button" class="key op" data-k="+" aria-label="Add">+</button>
+      <button type="button" class="key arith" data-k="+" aria-label="Add">+</button>
 
       <button type="button" class="key op" data-k="%" aria-label="Percent">%</button>
       <button type="button" class="key" data-k="0">0</button>
