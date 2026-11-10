@@ -177,11 +177,50 @@
   .h-item .r { font: 500 1.1rem var(--font-display); font-variant-numeric: tabular-nums; color: var(--accent); }
   .h-empty { margin: 0; padding: 8px 0; font-size: 0.9rem; color: var(--muted); }
 
+  .pane { display: flex; flex-direction: column; gap: 16px; }
+  .pane[hidden] { display: none; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: var(--panel); box-shadow: 0 1px 0 var(--line); }
+  .tab { height: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font: 600 0.95rem var(--font-body); cursor: pointer; }
+  .tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+  .tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .card { background: var(--panel); border-radius: 20px; padding: 16px; box-shadow: 0 1px 0 var(--line); display: flex; flex-direction: column; gap: 14px; }
+  .emi-label { font-size: 0.85rem; font-weight: 600; color: var(--screen-muted); }
+  .emi-sub { font-size: 0.85rem; color: var(--screen-muted); text-align: right; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+  .field input, .field select { width: 100%; height: 48px; padding: 0 12px; border: 1px solid var(--op); border-radius: 12px; background: var(--key); color: var(--ink); font: 500 1.1rem var(--font-display); }
+  .field input:focus-visible, .field select:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+  .hint { font-size: 0.85rem; color: var(--muted); margin-top: -8px; min-height: 1.2em; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--op); }
+  .bar .p { background: var(--accent); }
+  .bar .i { background: var(--opk); }
+  .sum { display: flex; flex-direction: column; gap: 10px; }
+  .sum-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 0.95rem; }
+  .sum-row .k { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+  .sum-row .v { font: 500 1.05rem var(--font-display); font-variant-numeric: tabular-nums; }
+  .sum-row.total { border-top: 1px solid var(--op); padding-top: 10px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot.p { background: var(--accent); }
+  .dot.i { background: var(--opk); }
+  details.sched summary { cursor: pointer; font-weight: 600; font-size: 0.95rem; }
+  details.sched summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .tbl { overflow-x: auto; margin-top: 10px; }
+  .tbl table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+  .tbl th, .tbl td { padding: 6px 8px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--op); }
+  .tbl th:first-child, .tbl td:first-child { text-align: left; }
+  .tbl th { color: var(--muted); font-weight: 600; }
+
   @media (prefers-reduced-motion: reduce) { .key { transition: none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="tabs" role="tablist" aria-label="Calculator type">
+    <button type="button" class="tab" role="tab" id="tab-calc" aria-selected="true" aria-controls="pane-calc">Calculator</button>
+    <button type="button" class="tab" role="tab" id="tab-emi" aria-selected="false" aria-controls="pane-emi">EMI</button>
+  </div>
+
+  <div class="pane" id="pane-calc" role="tabpanel" aria-labelledby="tab-calc">
   <main class="calc" aria-label="Calculator">
     <div class="screen">
       <div class="screen-top">
@@ -226,6 +265,55 @@
     <ul class="h-list" id="h-list"></ul>
     <p class="h-empty" id="h-empty">Finished calculations appear here. Tap one to use its result.</p>
   </section>
+  </div>
+
+  <div class="pane" id="pane-emi" role="tabpanel" aria-labelledby="tab-emi" hidden>
+    <div class="screen">
+      <div class="emi-label">Monthly EMI</div>
+      <div class="result" id="emi-out" role="status" aria-live="polite">₹0</div>
+      <div class="emi-sub" id="emi-sub"></div>
+    </div>
+
+    <div class="card">
+      <label class="field" for="emi-p">Loan amount (₹)
+        <input id="emi-p" type="text" inputmode="decimal" autocomplete="off" value="500000">
+      </label>
+      <div class="hint" id="emi-p-hint"></div>
+      <label class="field" for="emi-r">Interest rate (% per year)
+        <input id="emi-r" type="text" inputmode="decimal" autocomplete="off" value="12">
+      </label>
+      <div class="row2">
+        <label class="field" for="emi-t">Tenure
+          <input id="emi-t" type="text" inputmode="decimal" autocomplete="off" value="3">
+        </label>
+        <label class="field" for="emi-u">Unit
+          <select id="emi-u"><option value="y">Years</option><option value="m">Months</option></select>
+        </label>
+      </div>
+    </div>
+
+    <div id="emi-results" class="pane">
+      <div class="card">
+        <div class="bar" id="emi-bar" aria-hidden="true"><span class="p" id="bar-p"></span><span class="i" id="bar-i"></span></div>
+        <div class="sum">
+          <div class="sum-row"><span class="k"><span class="dot p"></span>Loan amount</span><span class="v" id="s-p"></span></div>
+          <div class="sum-row"><span class="k"><span class="dot i"></span>Total interest</span><span class="v" id="s-i"></span></div>
+          <div class="sum-row total"><span class="k">Total payment</span><span class="v" id="s-t"></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <details class="sched">
+          <summary>Year-wise schedule</summary>
+          <div class="tbl">
+            <table>
+              <thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead>
+              <tbody id="emi-rows"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -457,6 +545,9 @@ function evaluate(src) {
   var keyMap = { '*': '×', '/': '÷', '-': '−', 'x': '×', 'X': '×', 'Enter': '=', '=': '=', 'Backspace': 'back', 'Escape': 'C', 'c': 'C', 'C': 'C' };
   document.addEventListener('keydown', function (ev) {
     if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (document.getElementById('pane-emi').hidden === false) return;
+    var tg = ev.target && ev.target.tagName;
+    if (tg === 'INPUT' || tg === 'SELECT') return;
     var k = ev.key;
     if (keyMap[k]) k = keyMap[k];
     else if (!(isDigit(k) || k === '.' || k === '+' || k === '(' || k === ')' || k === '%')) return;
@@ -468,6 +559,87 @@ function evaluate(src) {
 
   renderHistory();
   render();
+})();
+</script>
+<script>
+// <emi>
+function emiCalc(P, annualPct, n) {
+  var r = annualPct / 12 / 100;
+  var emi = r === 0 ? P / n : P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+  var total = emi * n, bal = P, years = [];
+  for (var m = 1; m <= n; m++) {
+    var yi = Math.ceil(m / 12) - 1;
+    if (!years[yi]) years[yi] = { year: yi + 1, principal: 0, interest: 0, balance: 0 };
+    var interest = bal * r, princ = emi - interest;
+    bal = Math.max(0, bal - princ);
+    years[yi].principal += princ;
+    years[yi].interest += interest;
+    years[yi].balance = m === n ? 0 : bal;
+  }
+  return { emi: emi, total: total, interest: total - P, years: years };
+}
+// </emi>
+
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function num(v) { var x = parseFloat(String(v).replace(/,/g, '')); return isNaN(x) ? NaN : x; }
+  function inr(n, d) { return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); }
+  function trim(x) { return String(parseFloat(x.toFixed(2))); }
+  function words(n) {
+    if (n >= 1e7) return trim(n / 1e7) + ' crore';
+    if (n >= 1e5) return trim(n / 1e5) + ' lakh';
+    if (n >= 1e3) return trim(n / 1e3) + ' thousand';
+    return '';
+  }
+
+  function update() {
+    var P = num($('emi-p').value), R = num($('emi-r').value), T = num($('emi-t').value);
+    var months = $('emi-u').value === 'y' ? Math.round(T * 12) : Math.round(T);
+    var out = $('emi-out'), sub = $('emi-sub');
+    $('emi-p-hint').textContent = P > 0 ? inr(P) + (words(P) ? ' · ' + words(P) : '') : '';
+    var ok = P > 0 && R >= 0 && R <= 100 && months >= 1 && months <= 600;
+    $('emi-results').hidden = !ok;
+    if (!ok) {
+      out.className = 'result err';
+      out.textContent = 'Check the numbers';
+      sub.textContent = 'Amount above 0, rate 0 to 100%, tenure up to 50 years';
+      return;
+    }
+    var c = emiCalc(P, R, months);
+    var big = inr(c.emi, 2);
+    out.className = 'result' + (big.length > 14 ? ' s' : big.length > 10 ? ' m' : '');
+    out.textContent = big;
+    sub.textContent = months + ' months at ' + R + '% a year';
+    $('s-p').textContent = inr(P);
+    $('s-i').textContent = inr(c.interest);
+    $('s-t').textContent = inr(c.total);
+    var pp = Math.round(P / c.total * 1000) / 10;
+    $('bar-p').style.width = pp + '%';
+    $('bar-i').style.width = (100 - pp) + '%';
+    var body = $('emi-rows');
+    body.innerHTML = '';
+    c.years.forEach(function (y) {
+      var tr = document.createElement('tr');
+      [String(y.year), inr(y.principal), inr(y.interest), inr(y.balance)].forEach(function (t) {
+        var td = document.createElement('td'); td.textContent = t; tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+  }
+  ['emi-p', 'emi-r', 'emi-t'].forEach(function (id) { $(id).addEventListener('input', update); });
+  $('emi-u').addEventListener('change', update);
+
+  function show(which) {
+    var emi = which === 'emi';
+    $('pane-calc').hidden = emi;
+    $('pane-emi').hidden = !emi;
+    $('tab-calc').setAttribute('aria-selected', String(!emi));
+    $('tab-emi').setAttribute('aria-selected', String(emi));
+  }
+  $('tab-calc').addEventListener('click', function () { show('calc'); });
+  $('tab-emi').addEventListener('click', function () { show('emi'); });
+
+  update();
 })();
 </script>
 </body>
