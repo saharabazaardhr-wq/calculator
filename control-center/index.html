@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Control Center</title>
+<style>
+:root{
+  --bg:#f4f6f9;--card:#fff;--ink:#16202c;--muted:#64748b;--line:#e3e8ef;
+  --brand:#0f5132;--brand2:#198754;--accent:#f59f00;
+  --ok:#198754;--okbg:#e6f4ec;--warn:#b7791f;--warnbg:#fff4dd;--bad:#c92a2a;--badbg:#fdecec;--info:#1c64b4;--infobg:#e7f0fb;
+  --r:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:var(--brand);color:#fff}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{opacity:.8;font-size:12px}
+.logo{width:36px;height:36px;border-radius:9px;background:var(--accent);color:#1b1b1b;display:grid;place-items:center;font-weight:800;flex:none}
+.who{font-size:12px;display:flex;flex-direction:column;gap:2px;opacity:.95}
+.who select{max-width:180px;padding:5px 8px;border-radius:8px;border:0}
+.layout{display:flex;max-width:1200px;margin:0 auto}
+nav{width:200px;flex:none;padding:16px 8px;position:sticky;top:56px;align-self:flex-start}
+nav button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;margin-bottom:4px;border:0;border-radius:10px;background:none;color:var(--ink);cursor:pointer;text-align:left}
+nav button.on{background:var(--card);box-shadow:0 1px 3px #0001;font-weight:600;color:var(--brand)}
+nav .ic{width:22px;text-align:center}
+main{flex:1;min-width:0;padding:16px 16px 90px}
+h1{font-size:22px;margin:4px 0 14px}
+h2{font-size:16px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat .n{font-size:26px;font-weight:700}
+.stat .l{color:var(--muted);font-size:13px}
+.stat.bad .n{color:var(--bad)} .stat.ok .n{color:var(--ok)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sp{flex:1}
+.list>div{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.list>div:first-child{border-top:0}
+.muted{color:var(--muted);font-size:13px}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.b-ok{background:var(--okbg);color:var(--ok)} .b-warn{background:var(--warnbg);color:var(--warn)}
+.b-bad{background:var(--badbg);color:var(--bad)} .b-info{background:var(--infobg);color:var(--info)}
+.b-mute{background:#eef1f5;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#c5cdd8}
+.btn.pri{background:var(--brand2);border-color:var(--brand2);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn.wa{background:#25d366;border-color:#25d366;color:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--card);padding:5px 12px;border-radius:99px;cursor:pointer;font-size:13px}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 6px;border-top:1px solid var(--line);font-size:14px;vertical-align:middle}
+th{color:var(--muted);font-weight:600;font-size:12px;border-top:0}
+.tw{overflow-x:auto}
+.bar{height:8px;background:#eef1f5;border-radius:99px;overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%}
+.tt{font-weight:600}
+form label{display:block;margin-bottom:10px;font-size:13px;color:var(--muted)}
+form input:not([type=checkbox]),form select,form textarea{display:block;width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+form textarea{min-height:90px}
+.check{display:flex!important;align-items:center;gap:8px;color:var(--ink)!important}
+.modal{position:fixed;inset:0;background:#0007;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.modal.hidden{display:none}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:18px}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:16px}}
+.item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.item input[type=checkbox]{width:22px;height:22px;margin-top:1px;flex:none}
+.thumb{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.photo-btn{font-size:12px}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#16202c;color:#fff;padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60}
+#toast.show{opacity:1}
+.tree ul{list-style:none;margin:0;padding-left:20px;border-left:2px solid var(--line)}
+.tree>ul{padding-left:0;border:0}
+.tree li{margin:6px 0}
+.node{display:inline-flex;gap:8px;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:5px 10px}
+.kra li{margin:3px 0}
+pre.rep{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:0 0 12px}
+.att td.c{text-align:center}
+.note{background:var(--infobg);color:#164a83;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+@media(max-width:760px){
+  nav{position:fixed;bottom:0;left:0;right:0;top:auto;width:auto;display:flex;justify-content:space-around;background:var(--card);border-top:1px solid var(--line);padding:4px 2px;z-index:30;overflow-x:auto}
+  nav button{flex-direction:column;gap:2px;font-size:11px;padding:6px 6px;margin:0;width:auto;min-width:56px;align-items:center;text-align:center}
+  nav button.on{box-shadow:none;background:var(--okbg)}
+  .who{font-size:0}.who select{max-width:120px;font-size:13px}
+  .brand b{font-size:14px;max-width:52vw}
+  .hide-m{display:none}
+  h1{font-size:19px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">CC</span><div><b id="coName"></b><small>Control Center</small></div></div>
+  <label class="who">Viewing as<select id="userSel"></select></label>
+</header>
+<div class="layout"><nav id="nav"></nav><main id="main"></main></div>
+<div id="modal" class="modal hidden"><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ============ Control Center: Phase 0 + 1 (Team & Accountability) ============ */
+const KEY = 'cc_v1';
+let S, VIEW = 'home', TF = {status:'open', who:''};
+
+/* ---------- helpers ---------- */
+const $ = (s, r=document) => r.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const pad = n => String(n).padStart(2, '0');
+const dstr = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = () => dstr(new Date());
+const addDays = (s, n) => { const d = new Date(s+'T00:00'); d.setDate(d.getDate()+n); return dstr(d); };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDT = ms => new Date(ms).toLocaleString('en-IN', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+const fmtT = ms => new Date(ms).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+const fmtD = s => new Date(s+'T00:00').toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'short'});
+const dur = h => h < 1 ? Math.max(1, Math.round(h*60))+'m' : h < 48 ? Math.round(h)+'h' : Math.round(h/24)+'d';
+const lvl = h => h > 24 ? 3 : h > 2 ? 2 : 1;
+const at = (date, time) => new Date(date+'T'+time).getTime();
+const localDT = ms => { const d = new Date(ms); return dstr(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes()); };
+
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){ toast('Storage full: export a backup in Settings'); } }
+function load(){ try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch(e){ return null; } }
+
+/* ---------- data access ---------- */
+const person = id => S.people.find(p => p.id === id);
+const roleOf = p => S.roles.find(r => r.id === p?.roleId);
+const level = p => roleOf(p)?.level || 'staff';
+const me = () => person(S.currentUserId);
+const ownerP = () => S.people.find(p => level(p) === 'owner' && p.active !== false);
+const active = () => S.people.filter(p => p.active !== false);
+const nm = id => person(id)?.name || 'Unassigned';
+function descendants(id){
+  const out = [], q = [id];
+  while (q.length){ const x = q.shift(); active().forEach(p => { if (p.managerId === x && !out.includes(p.id) && p.id !== id){ out.push(p.id); q.push(p.id); } }); }
+  return out;
+}
+function visibleIds(){
+  const m = me(); if (!m) return [];
+  const L = level(m);
+  if (L === 'owner') return active().map(p => p.id);
+  if (L === 'manager') return [m.id, ...descendants(m.id)];
+  return [m.id];
+}
+const isBoss = () => ['owner','manager'].includes(level(me()));
+const isOwner = () => level(me()) === 'owner';
+function escalateTo(pid, L){
+  const p = person(pid);
+  if (L === 1) return p;
+  if (L === 2) return person(p?.managerId) || ownerP();
+  return ownerP();
+}
+
+/* ---------- state calculations ---------- */
+function taskState(t){
+  const due = new Date(t.due).getTime();
+  if (t.status === 'done') return {key: t.doneAt <= due ? 'ontime' : 'late', due};
+  const now = Date.now();
+  if (now <= due) return {key:'open', due, left:(due-now)/36e5};
+  const h = (now-due)/36e5; return {key:'overdue', hours:h, level:lvl(h), due};
+}
+const runKey = (date, cid) => date+'|'+cid;
+function clState(c, date){
+  const r = S.runs[runKey(date, c.id)], dueMs = at(date, c.due), now = Date.now();
+  if (r && r.submittedAt) return {key: r.submittedAt <= dueMs ? 'ontime' : 'late', r, dueMs};
+  if (now > dueMs){ const h = (now-dueMs)/36e5; return {key:'overdue', hours:h, level:lvl(h), r, dueMs}; }
+  return {key:'pending', r, dueMs};
+}
+function score(pid, days=7){
+  const now = Date.now(), start = at(addDays(today(), -(days-1)), '00:00');
+  let tE=0, tO=0, cE=0, cO=0;
+  S.tasks.forEach(t => { if (t.assigneeId !== pid) return; const d = new Date(t.due).getTime(); if (d < start || d > now) return; tE++; if (t.status==='done' && t.doneAt <= d) tO++; });
+  for (let i=0; i<days; i++){
+    const date = addDays(today(), -i);
+    S.checklists.forEach(c => { if (c.assigneeId !== pid || c.createdAt > date) return; const st = clState(c, date); if (st.key==='pending') return; cE++; if (st.key==='ontime') cO++; });
+  }
+  const parts = []; if (tE) parts.push(tO/tE); if (cE) parts.push(cO/cE);
+  return {tE, tO, cE, cO, score: parts.length ? Math.round(parts.reduce((a,b)=>a+b)/parts.length*100) : null};
+}
+const scoreColor = s => s == null ? '#cbd5e1' : s >= 85 ? 'var(--ok)' : s >= 65 ? 'var(--accent)' : 'var(--bad)';
+const pct = (a, b) => b ? Math.round(a/b*100)+'%' : '—';
+function attOf(date, pid){ return S.attendance[date+'|'+pid]; }
+function isLate(p, a){ return a && a.in > at(dstr(new Date(a.in)), p.shift || '09:00') + 15*60000; }
+
+/* ---------- WhatsApp ---------- */
+function waLink(phone, text){
+  const ph = String(phone||'').replace(/\D/g,'');
+  const num = ph.length === 10 ? '91'+ph : ph;
+  return 'https://wa.me/'+num+'?text='+encodeURIComponent(text);
+}
+
+/* ---------- seed (demo data) ---------- */
+function seed(){
+  const T = today(), D = n => addDays(T, n);
+  const roles = [
+    {id:'r_owner', name:'Owner / Director', level:'owner', kras:['Monthly sales target achieved','Net margin at least 3%','Every manager scores 85%+ on Control Center']},
+    {id:'r_sm', name:'Store Manager', level:'manager', kras:['Daily checklists 95%+ on time across store','Shrinkage below 0.5% of sales','Out-of-stock below 3% of SKUs','Customer complaints closed within 24 hours']},
+    {id:'r_dh', name:'Department Head', level:'manager', kras:['Department sales vs monthly target','Wastage below 1% of department sales','Shelf fill 95%+ at opening','Expiring items flagged 15 days in advance']},
+    {id:'r_cash', name:'Cash Supervisor', level:'manager', kras:['Cash difference = ₹0 every day','Cash closing submitted by 10:30 PM','Bank deposit done by 11 AM next day']},
+    {id:'r_staff', name:'Floor Staff', level:'staff', kras:['Assigned checklists 100% on time','Shelf facing & FIFO in own section','Zero customer complaints in own section']},
+    {id:'r_cashier', name:'Cashier', level:'staff', kras:['Cash short/excess = ₹0','Billing errors = 0','Customer mobile captured on 80%+ bills']},
+  ];
+  const P = (id, name, roleId, dept, managerId, phone, shift) => ({id, name, roleId, dept, managerId, phone, shift, store:'s1', active:true});
+  const people = [
+    P('p_owner','Owner (You)','r_owner','Management','', '', '09:00'),
+    P('p_sm','Rakesh Sharma','r_sm','Management','p_owner','9800000001','09:00'),
+    P('p_fmcg','Anita Verma','r_dh','FMCG','p_sm','9800000002','09:00'),
+    P('p_stp','Salim Shaikh','r_dh','Staples & Grocery','p_sm','9800000003','09:00'),
+    P('p_fv','Priya Nair','r_dh','Fruits & Vegetables','p_sm','9800000004','07:30'),
+    P('p_dairy','Vikram Rao','r_dh','Dairy & Frozen','p_sm','9800000005','08:00'),
+    P('p_cash','Meena Joshi','r_cash','Cash & Billing','p_sm','9800000006','13:30'),
+    P('p_s1','Arjun Patil','r_staff','FMCG','p_fmcg','9800000007','09:00'),
+    P('p_s2','Pooja Singh','r_staff','Staples & Grocery','p_stp','9800000008','09:00'),
+    P('p_s3','Rahul Das','r_staff','Fruits & Vegetables','p_fv','9800000009','07:30'),
+    P('p_c1','Sneha Kulkarni','r_cashier','Cash & Billing','p_cash','9800000010','09:00'),
+    P('p_c2','Farhan Ali','r_cashier','Cash & Billing','p_cash','9800000011','14:00'),
+  ];
+  const it = arr => arr.map(x => ({id:uid(), text:x.replace(/^\[photo\]\s*/,''), photo:/^\[photo\]/.test(x)}));
+  const C = (id, name, assigneeId, due, items) => ({id, name, assigneeId, due, items:it(items), createdAt:D(-10)});
+  const checklists = [
+    C('c_open','Store Opening Checklist','p_sm','09:30',['Shutters opened & entrance clean','All lights, ACs and billing counters ON','[photo] Entrance & first aisle photo','Card / UPI machines tested','Staff attendance & grooming checked','Opening cash float verified']),
+    C('c_temp','Fridge & Freezer Temperature Log','p_dairy','10:00',['[photo] Dairy chiller reading (2–5°C)','[photo] Freezer reading (−18°C or colder)','Expired / damaged dairy removed & logged','Milk & bread receipt checked against challan']),
+    C('c_fv','Fruits & Vegetables Freshness Check','p_fv','10:30',['Spoiled items removed & wastage logged','[photo] F&V display fully stocked','Price labels correct on every bin','Display cleaned & misted']),
+    C('c_fmcg','Shelf Fill & Expiry Check','p_fmcg','11:00',['Shelves faced & gaps filled','Out-of-stock items reported to purchase','Items expiring in 15 days flagged','[photo] Offer / promo display in place']),
+    C('c_stp','Staples Section Check','p_stp','11:00',['Loose grains bins clean & covered','Packed staples shelves full','Pest check done','[photo] Section photo']),
+    C('c_clean','Cleanliness Round (Noon)','p_s1','12:30',['Floors mopped in all aisles','Washroom cleaned','Dustbins emptied','[photo] Trolleys & baskets arranged']),
+    C('c_cash','Cash Closing','p_cash','22:30',['POS sales report printed','Cash counted & matched with POS','UPI / card settlement matched','[photo] Signed cash closing sheet','Short / excess recorded with reason']),
+    C('c_close','Store Closing Checklist','p_sm','23:00',['All customers out, doors locked','Fridges ON, lights & ACs OFF','[photo] Shutters locked','Keys handed over & logged']),
+  ];
+  // 6 days of history (deterministic)
+  let x = 20261111; const rnd = () => { x |= 0; x = x + 0x6D2B79F5 | 0; let t = Math.imul(x ^ x >>> 15, 1 | x); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const weak = {p_stp:.25, p_s1:.15, p_fv:.08};
+  const runs = {};
+  for (let i=1; i<=6; i++){
+    const date = D(-i);
+    checklists.forEach(c => {
+      const r = rnd(), w = weak[c.assigneeId] || 0;
+      if (r < .06 + w) return;                       // missed
+      const late = r < .16 + w*1.5;
+      const due = at(date, c.due);
+      const sub = due + (late ? (40 + rnd()*150)*60000 : -(5 + rnd()*50)*60000);
+      const items = {}; c.items.forEach(ii => items[ii.id] = {done:true, at:sub, photo:''});
+      runs[runKey(date, c.id)] = {items, submittedAt:sub, by:c.assigneeId};
+    });
+  }
+  const now = Date.now();
+  const openDue = at(T, '09:30');
+  if (now > openDue - 20*60000){
+    const sub = openDue - 18*60000, items = {};
+    checklists[0].items.forEach(ii => items[ii.id] = {done:true, at:sub, photo:''});
+    runs[runKey(T,'c_open')] = {items, submittedAt:sub, by:'p_sm'};
+  }
+  const K = (title, assigneeId, due, extra={}) => ({id:uid(), title, desc:'', assigneeId, createdBy:'p_owner', due, priority:'normal', proofRequired:true, status:'open', createdAt:now-3*864e5, ...extra});
+  const tasks = [
+    K('Get quotation from 2 new rice suppliers','p_stp', D(-2)+'T17:00', {priority:'high', desc:'Compare rate, credit days and delivery schedule with current supplier.'}),
+    K('Fix chiller door gasket (call technician)','p_sm', localDT(now-3*36e5), {priority:'high', desc:'Dairy chiller door not sealing; temperature rising in the afternoon.'}),
+    K('Rearrange biscuits aisle as per planogram','p_s1', T+'T20:00'),
+    K('Collect expiry-return claim from HUL distributor','p_fmcg', D(1)+'T13:00', {desc:'Claim note for last month expiry returns pending.'}),
+    K('Remove expired curd batch from chiller','p_dairy', D(-1)+'T11:00', {status:'done', doneAt:at(D(-1),'14:20'), note:'Removed 18 cups, logged as wastage.'}),
+    K('Diwali offer standee at entrance','p_fmcg', D(-3)+'T18:00', {status:'done', doneAt:at(D(-3),'16:05'), note:'Installed.'}),
+    K('Train new cashier on UPI refund process','p_cash', D(-1)+'T16:00', {status:'done', doneAt:at(D(-1),'15:10'), note:'Sneha trained, tested 2 refunds.'}),
+    K('Deep clean F&V crates','p_fv', D(-4)+'T12:00', {status:'done', doneAt:at(D(-4),'17:40')}),
+    K('Count & report damaged oil tins in godown','p_s2', D(-1)+'T18:00'),
+  ];
+  const attendance = {};
+  people.forEach((p, k) => {
+    if (p.id === 'p_owner') return;
+    for (let i=0; i<=6; i++){
+      const date = D(-i);
+      if ((k + i) % 7 === 0) continue;               // weekly off
+      if (i === 0 && at(date, p.shift) > now) continue;
+      const lateMin = rnd() < .2 ? 20 + Math.round(rnd()*40) : -Math.round(rnd()*15);
+      const inT = at(date, p.shift) + lateMin*60000;
+      if (i === 0 && inT > now) continue;
+      attendance[date+'|'+p.id] = {in:inT, out: i === 0 ? null : inT + 9*36e5};
+    }
+  });
+  return {
+    v:1, company:{name:'Sahara Bazaar India Pvt Ltd', stores:[{id:'s1', name:'Main Store'}],
+      departments:['Management','FMCG','Staples & Grocery','Fruits & Vegetables','Dairy & Frozen','Cash & Billing']},
+    roles, people, checklists, runs, tasks, attendance, currentUserId:'p_owner'
+  };
+}
+function blank(name){
+  return {v:1, company:{name:name||'My Business', stores:[{id:'s1', name:'Main Store'}], departments:['Management']},
+    roles:[{id:'r_owner', name:'Owner / Director', level:'owner', kras:[]},{id:'r_mgr', name:'Manager', level:'manager', kras:[]},{id:'r_staff', name:'Staff', level:'staff', kras:[]}],
+    people:[{id:'p_owner', name:'Owner (You)', roleId:'r_owner', dept:'Management', managerId:'', phone:'', shift:'09:00', store:'s1', active:true}],
+    checklists:[], runs:{}, tasks:[], attendance:{}, currentUserId:'p_owner'};
+}
+function prunePhotos(){
+  const cut = addDays(today(), -14);
+  Object.entries(S.runs).forEach(([k, r]) => { if (k.split('|')[0] < cut) Object.values(r.items||{}).forEach(i => { if (i.photo) i.photo = ''; }); });
+  S.tasks.forEach(t => { if (t.proof && t.doneAt && t.doneAt < at(cut,'00:00')) t.proof = ''; });
+}
+
+/* ---------- UI shell ---------- */
+const NAV = [
+  ['home','🏠','Home'], ['tasks','✅','Tasks'], ['checklists','📋','Checklists'],
+  ['attendance','🕘','Attendance'], ['team','👥','Team', 'boss'], ['huddle','📣','Huddle', 'boss'], ['settings','⚙️','Settings', 'owner'],
+];
+function renderShell(){
+  $('#coName').textContent = S.company.name;
+  document.title = 'Control Center · ' + S.company.name;
+  $('#userSel').innerHTML = active().map(p => `<option value="${p.id}" ${p.id===S.currentUserId?'selected':''}>${esc(p.name)} (${esc(roleOf(p)?.name||'')})</option>`).join('');
+  const nav = NAV.filter(n => !n[3] || (n[3]==='boss' ? isBoss() : isOwner()));
+  if (!nav.find(n => n[0]===VIEW)) VIEW = 'home';
+  $('#nav').innerHTML = nav.map(n => `<button class="${n[0]===VIEW?'on':''}" data-a="go" data-id="${n[0]}"><span class="ic">${n[1]}</span>${n[2]}</button>`).join('');
+}
+function render(){ renderShell(); $('#main').innerHTML = (V[VIEW] || V.home)(); }
+function openModal(html){ $('#sheet').innerHTML = html; $('#modal').classList.remove('hidden'); }
+function closeModal(){ $('#modal').classList.add('hidden'); $('#sheet').innerHTML = ''; }
+
+/* ---------- small renderers ---------- */
+function stateBadge(st){
+  return {ontime:'<span class="badge b-ok">Done on time</span>', late:'<span class="badge b-warn">Done late</span>',
+    open:`<span class="badge b-info">Due in ${dur(st.left||0)}</span>`, pending:'<span class="badge b-info">Pending</span>',
+    overdue:`<span class="badge b-bad">Overdue ${dur(st.hours||0)}</span>`}[st.key] || '';
+}
+function escBadge(L){
+  return ['', '<span class="badge b-warn">L1 · Reminder</span>', '<span class="badge b-bad">L2 · Manager</span>', '<span class="badge b-bad">L3 · OWNER</span>'][L];
+}
+function scoreBar(s){ return `<div class="row" style="gap:8px;flex-wrap:nowrap"><div class="bar" style="flex:1"><i style="width:${s??0}%;background:${scoreColor(s)}"></i></div><b style="min-width:38px">${s==null?'—':s+'%'}</b></div>`; }
+function escalations(){
+  const vis = new Set(visibleIds()), out = [];
+  S.tasks.forEach(t => { if (!vis.has(t.assigneeId)) return; const st = taskState(t); if (st.key==='overdue') out.push({kind:'Task', title:t.title, pid:t.assigneeId, ...st, id:t.id}); });
+  S.checklists.forEach(c => { if (!vis.has(c.assigneeId)) return; const st = clState(c, today()); if (st.key==='overdue') out.push({kind:'Checklist', title:c.name, pid:c.assigneeId, ...st, id:c.id}); });
+  return out.sort((a,b) => b.hours - a.hours);
+}
+function escRow(e){
+  const to = escalateTo(e.pid, e.level);
+  const msg = `Reminder from ${S.company.name} Control Center: "${e.title}" assigned to ${nm(e.pid)} is overdue by ${dur(e.hours)}. Please complete it and upload proof.`;
+  const target = e.level === 1 ? person(e.pid) : to;
+  return `<div><div class="sp"><div class="tt">${esc(e.title)} <span class="muted">· ${e.kind}</span></div>
+    <div class="muted">${esc(nm(e.pid))} · overdue ${dur(e.hours)}${e.level>1?' · escalated to <b>'+esc(to?.name||'')+'</b>':''}</div></div>
+    <div class="row" style="gap:6px">${escBadge(e.level)}${target?.phone?`<a class="btn sm wa" target="_blank" rel="noopener" href="${waLink(target.phone, msg)}">WhatsApp</a>`:''}</div></div>`;
+}
+
+/* ---------- views ---------- */
+const V = {};
+V.home = () => {
+  const m = me(), vis = visibleIds(), T = today();
+  const myCl = S.checklists.filter(c => c.assigneeId === m.id);
+  const myTasks = S.tasks.filter(t => t.assigneeId === m.id && t.status !== 'done').sort((a,b) => a.due.localeCompare(b.due));
+  const sc = score(m.id);
+  let h = `<h1>Good ${new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, ${esc(m.name.split(' ')[0])}</h1>`;
+  if (isBoss()){
+    const vt = S.tasks.filter(t => vis.includes(t.assigneeId));
+    const open = vt.filter(t => t.status !== 'done').length;
+    const over = vt.filter(t => taskState(t).key === 'overdue').length;
+    const vc = S.checklists.filter(c => vis.includes(c.assigneeId));
+    const done = vc.filter(c => ['ontime','late'].includes(clState(c,T).key)).length;
+    const staff = vis.filter(id => id !== ownerP()?.id);
+    const present = staff.filter(id => attOf(T,id)).length;
+    const team = vis.filter(id => id !== m.id || level(m) !== 'owner').map(id => ({p:person(id), s:score(id)}));
+    const avg = team.filter(x => x.s.score != null);
+    const avgS = avg.length ? Math.round(avg.reduce((a,x) => a + x.s.score, 0) / avg.length) : null;
+    h += `<div class="grid">
+      <div class="stat ${avgS>=85?'ok':avgS<65?'bad':''}"><div class="n">${avgS==null?'—':avgS+'%'}</div><div class="l">Team accountability score (7 days)</div></div>
+      <div class="stat ${over?'bad':'ok'}"><div class="n">${over}</div><div class="l">Overdue tasks</div></div>
+      <div class="stat"><div class="n">${open}</div><div class="l">Open tasks</div></div>
+      <div class="stat"><div class="n">${done}/${vc.length}</div><div class="l">Checklists done today</div></div>
+      <div class="stat"><div class="n">${present}/${staff.length}</div><div class="l">Staff present today</div></div>
+    </div>`;
+    const es = escalations();
+    h += `<div class="card"><div class="row"><h2 class="sp">🚨 Escalations (${es.length})</h2><span class="muted">L1 overdue · L2 &gt;2h → manager · L3 &gt;24h → owner</span></div>
+      <div class="list">${es.length ? es.map(escRow).join('') : '<div class="muted">Nothing overdue. Everyone is on track. 🎉</div>'}</div></div>`;
+    team.sort((a,b) => (a.s.score??101) - (b.s.score??101));
+    h += `<div class="card"><h2>📊 Accountability scorecard: last 7 days</h2><div class="tw"><table>
+      <tr><th>Person</th><th class="hide-m">Role</th><th>Tasks on time</th><th>Checklists on time</th><th style="min-width:140px">Score</th></tr>
+      ${team.map(({p,s}) => `<tr><td><b>${esc(p.name)}</b><div class="muted">${esc(p.dept)}</div></td><td class="hide-m">${esc(roleOf(p)?.name)}</td>
+        <td>${s.tO}/${s.tE}</td><td>${s.cO}/${s.cE}</td><td>${scoreBar(s.score)}</td></tr>`).join('')}
+      </table></div><p class="muted" style="margin:8px 0 0">Score = average of tasks completed by deadline and checklists submitted by due time. Lowest scores are shown first.</p></div>`;
+  }
+  if (myCl.length || myTasks.length || !isOwner()){
+    h += `<div class="card"><div class="row"><h2 class="sp">📌 My day</h2>${sc.score!=null?`<span class="muted">My score: <b style="color:${scoreColor(sc.score)}">${sc.score}%</b></span>`:''}</div><div class="list">`;
+    myCl.forEach(c => { const st = clState(c, T); h += `<div><div class="sp"><div class="tt">📋 ${esc(c.name)}</div><div class="muted">Due ${c.due}</div></div>${stateBadge(st)}${['pending','overdue'].includes(st.key)?`<button class="btn sm pri" data-a="runCl" data-id="${c.id}">Open</button>`:''}</div>`; });
+    myTasks.forEach(t => { const st = taskState(t); h += `<div><div class="sp"><div class="tt">✅ ${esc(t.title)}</div><div class="muted">Due ${fmtDT(new Date(t.due).getTime())}</div></div>${stateBadge(st)}<button class="btn sm pri" data-a="doneTask" data-id="${t.id}">Mark done</button></div>`; });
+    if (!myCl.length && !myTasks.length) h += '<div class="muted">Nothing assigned to you right now.</div>';
+    h += '</div></div>';
+  }
+  return h;
+};
+
+V.tasks = () => {
+  const vis = visibleIds();
+  let ts = S.tasks.filter(t => vis.includes(t.assigneeId) && (!TF.who || t.assigneeId === TF.who));
+  const f = TF.status;
+  ts = ts.filter(t => { const k = taskState(t).key; return f==='all' || (f==='open' && (k==='open'||k==='overdue')) || (f==='overdue' && k==='overdue') || (f==='done' && (k==='ontime'||k==='late')); });
+  ts.sort((a,b) => f==='done' ? (b.doneAt||0)-(a.doneAt||0) : a.due.localeCompare(b.due));
+  const chip = (k, l) => `<button class="chip ${TF.status===k?'on':''}" data-a="tf" data-id="${k}">${l}</button>`;
+  let h = `<div class="row"><h1 class="sp">Tasks</h1>${isBoss()?'<button class="btn pri" data-a="newTask">+ New task</button>':''}</div>
+    <div class="row" style="margin-bottom:12px"><div class="chips" style="margin:0">${chip('open','Open')}${chip('overdue','Overdue')}${chip('done','Done')}${chip('all','All')}</div>
+    ${vis.length>1?`<select id="whoF" style="padding:6px 10px;border-radius:9px;border:1px solid var(--line)"><option value="">Everyone</option>${vis.map(id => `<option value="${id}" ${TF.who===id?'selected':''}>${esc(nm(id))}</option>`).join('')}</select>`:''}</div>`;
+  if (!ts.length) return h + '<div class="card muted">No tasks here.</div>';
+  h += ts.map(t => {
+    const st = taskState(t);
+    const pr = t.priority==='high' ? '<span class="badge b-bad">High</span>' : t.priority==='low' ? '<span class="badge b-mute">Low</span>' : '';
+    const canDo = t.assigneeId === me().id || isBoss();
+    const msg = `Task reminder from ${S.company.name} Control Center:\n"${t.title}"\nDue: ${fmtDT(st.due)}\nPlease complete and upload proof.`;
+    return `<div class="card"><div class="row" style="align-items:flex-start"><div class="sp">
+      <div class="tt">${esc(t.title)} ${pr}</div>
+      ${t.desc?`<div style="margin:4px 0">${esc(t.desc)}</div>`:''}
+      <div class="muted">👤 ${esc(nm(t.assigneeId))} · ⏰ ${fmtDT(st.due)} · by ${esc(nm(t.createdBy))}${t.proofRequired?' · 📷 proof required':''}</div>
+      ${t.status==='done'?`<div class="muted" style="margin-top:4px">✔ Completed ${fmtDT(t.doneAt)}${t.note?' · “'+esc(t.note)+'”':''}</div>`:''}
+      ${t.proof?`<img class="thumb" style="margin-top:6px;cursor:pointer" src="${t.proof}" data-a="viewImg" data-id="${t.id}" alt="Proof photo">`:''}
+      </div><div style="text-align:right">${stateBadge(st)}${st.key==='overdue'?'<div style="margin-top:4px">'+escBadge(st.level)+'</div>':''}</div></div>
+      <div class="row" style="margin-top:10px;gap:6px">
+        ${t.status!=='done'&&canDo?`<button class="btn sm pri" data-a="doneTask" data-id="${t.id}">Mark done</button>`:''}
+        ${t.status!=='done'&&person(t.assigneeId)?.phone?`<a class="btn sm wa" target="_blank" rel="noopener" href="${waLink(person(t.assigneeId).phone, msg)}">WhatsApp reminder</a>`:''}
+        ${t.status==='done'&&isBoss()?`<button class="btn sm" data-a="reopenTask" data-id="${t.id}">Reopen</button>`:''}
+        ${isBoss()?`<button class="btn sm" data-a="editTask" data-id="${t.id}">Edit</button>`:''}
+        ${isOwner()?`<button class="btn sm danger" data-a="delTask" data-id="${t.id}">Delete</button>`:''}
+      </div></div>`;
+  }).join('');
+  return h;
+};
+
+V.checklists = () => {
+  const vis = visibleIds(), T = today();
+  const cs = S.checklists.filter(c => vis.includes(c.assigneeId)).sort((a,b) => a.due.localeCompare(b.due));
+  let h = `<div class="row"><h1 class="sp">Daily checklists · ${fmtD(T)}</h1>${isOwner()?'<button class="btn pri" data-a="editCl">+ New checklist</button>':''}</div>`;
+  if (!cs.length) h += '<div class="card muted">No checklists assigned.</div>';
+  h += cs.map(c => {
+    const st = clState(c, T), r = st.r, doneN = r ? c.items.filter(i => r.items?.[i.id]?.done).length : 0;
+    return `<div class="card"><div class="row"><div class="sp"><div class="tt">${esc(c.name)}</div>
+      <div class="muted">👤 ${esc(nm(c.assigneeId))} · due ${c.due} · ${doneN}/${c.items.length} items${r?.submittedAt?' · submitted '+fmtT(r.submittedAt):''}</div></div>
+      ${stateBadge(st)}${st.key==='overdue'?escBadge(st.level):''}</div>
+      <div class="row" style="margin-top:10px;gap:6px">
+        <button class="btn sm ${['pending','overdue'].includes(st.key)?'pri':''}" data-a="runCl" data-id="${c.id}">${r?.submittedAt?'View':'Open & fill'}</button>
+        <button class="btn sm" data-a="clHist" data-id="${c.id}">7-day history</button>
+        ${isOwner()?`<button class="btn sm" data-a="editCl" data-id="${c.id}">Edit</button><button class="btn sm danger" data-a="delCl" data-id="${c.id}">Delete</button>`:''}
+      </div></div>`;
+  }).join('');
+  return h;
+};
+
+V.attendance = () => {
+  const vis = visibleIds().filter(id => level(person(id)) !== 'owner'), T = today();
+  const days = [...Array(7)].map((_, i) => addDays(T, -6+i));
+  let h = `<h1>Attendance · ${fmtD(T)}</h1><div class="card"><h2>Today</h2><div class="list">`;
+  h += vis.map(id => {
+    const p = person(id), a = attOf(T, id), canMark = id === me().id || isBoss();
+    return `<div><div class="sp"><div class="tt">${esc(p.name)}</div><div class="muted">${esc(p.dept)} · shift ${p.shift||'09:00'}</div></div>
+      ${a ? `<span class="badge ${isLate(p,a)?'b-warn':'b-ok'}">${isLate(p,a)?'Late':'In'} ${fmtT(a.in)}</span>${a.out?`<span class="badge b-mute">Out ${fmtT(a.out)}</span>`:''}` : '<span class="badge b-mute">Not in</span>'}
+      ${canMark ? (!a ? `<button class="btn sm pri" data-a="checkIn" data-id="${id}">Check in</button>` : !a.out ? `<button class="btn sm" data-a="checkOut" data-id="${id}">Check out</button>` : '') : ''}</div>`;
+  }).join('') || '<div class="muted">No staff.</div>';
+  h += `</div></div><div class="card"><h2>Last 7 days</h2><div class="tw"><table class="att"><tr><th>Name</th>${days.map(d => `<th class="c">${new Date(d+'T00:00').toLocaleDateString('en-IN',{weekday:'short'})}<br>${d.slice(8)}</th>`).join('')}<th>Late</th></tr>`;
+  h += vis.map(id => { const p = person(id); let late = 0;
+    return `<tr><td>${esc(p.name)}</td>${days.map(d => { const a = attOf(d, id); if (a && isLate(p,a)) late++; return `<td class="c">${a ? (isLate(p,a)?'<span class="badge b-warn">L</span>':'<span class="badge b-ok">✓</span>') : '<span class="muted">–</span>'}</td>`; }).join('')}<td><b style="color:${late>1?'var(--bad)':'inherit'}">${late}</b></td></tr>`; }).join('');
+  return h + '</table></div><p class="muted" style="margin:8px 0 0">Late = check-in more than 15 minutes after shift start.</p></div>';
+};
+
+V.team = () => {
+  const vis = visibleIds();
+  const top = isOwner() ? active().filter(p => !p.managerId || !person(p.managerId)) : [me()];
+  const tree = p => { const kids = active().filter(k => k.managerId === p.id); return `<li><span class="node"><b>${esc(p.name)}</b><span class="muted">${esc(roleOf(p)?.name)}${p.dept?' · '+esc(p.dept):''}</span></span>${kids.length?'<ul>'+kids.map(tree).join('')+'</ul>':''}</li>`; };
+  let h = `<div class="row"><h1 class="sp">Team</h1>${isOwner()?'<button class="btn pri" data-a="editPerson">+ Add person</button>':''}</div>
+    <div class="card"><h2>Org chart</h2><div class="tree"><ul>${top.map(tree).join('')}</ul></div></div>
+    <div class="card"><h2>People</h2><div class="tw"><table><tr><th>Name</th><th>Role</th><th>Department</th><th>Reports to</th><th>Shift</th><th>Score 7d</th><th></th></tr>`;
+  const list = isOwner() ? S.people : S.people.filter(p => vis.includes(p.id));
+  h += list.map(p => `<tr style="${p.active===false?'opacity:.5':''}"><td><b>${esc(p.name)}</b><div class="muted">${esc(p.phone||'')}</div></td><td>${esc(roleOf(p)?.name)}</td><td>${esc(p.dept)}</td><td>${esc(person(p.managerId)?.name||'—')}</td><td>${p.shift||''}</td>
+    <td style="min-width:110px">${p.active===false?'Inactive':scoreBar(score(p.id).score)}</td><td>${isOwner()?`<button class="btn sm" data-a="editPerson" data-id="${p.id}">Edit</button>`:''}</td></tr>`).join('');
+  h += `</table></div></div><div class="row"><h1 class="sp" style="font-size:18px">Roles & KRAs (Key Result Areas)</h1>${isOwner()?'<button class="btn" data-a="editRole">+ New role</button>':''}</div>`;
+  h += `<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">${S.roles.map(r => `<div class="card" style="margin:0"><div class="row"><div class="sp tt">${esc(r.name)}</div><span class="badge b-mute">${r.level}</span></div>
+    <ol class="kra" style="padding-left:18px;margin:8px 0">${r.kras.map(k => `<li>${esc(k)}</li>`).join('') || '<li class="muted">No KRAs yet</li>'}</ol>
+    <div class="row"><span class="muted sp">${active().filter(p => p.roleId===r.id).length} people</span>${isOwner()?`<button class="btn sm" data-a="editRole" data-id="${r.id}">Edit</button>`:''}</div></div>`).join('')}</div>`;
+  return h;
+};
+
+function huddleText(){
+  const T = today(), Y = addDays(T, -1), vis = visibleIds();
+  const cs = S.checklists.filter(c => vis.includes(c.assigneeId));
+  const yst = cs.map(c => ({c, st:clState(c, Y)})).filter(x => x.c.createdAt <= Y);
+  const missed = yst.filter(x => x.st.key === 'overdue'), late = yst.filter(x => x.st.key === 'late');
+  const onT = yst.filter(x => x.st.key === 'ontime').length;
+  const over = S.tasks.filter(t => vis.includes(t.assigneeId) && taskState(t).key === 'overdue');
+  const dueToday = S.tasks.filter(t => vis.includes(t.assigneeId) && t.status !== 'done' && t.due.startsWith(T));
+  const sc = vis.filter(id => level(person(id)) !== 'owner').map(id => ({p:person(id), s:score(id).score})).filter(x => x.s != null).sort((a,b) => b.s - a.s);
+  let t = `*${S.company.name}: Morning Huddle*\n${fmtD(T)}\n\n`;
+  t += `*Yesterday's checklists:* ${onT}/${yst.length} on time\n`;
+  missed.forEach(x => t += `❌ Missed: ${x.c.name} (${nm(x.c.assigneeId)})\n`);
+  late.forEach(x => t += `⚠️ Late: ${x.c.name} (${nm(x.c.assigneeId)})\n`);
+  t += `\n*Overdue tasks (${over.length}):*\n`;
+  over.forEach(o => { const st = taskState(o); t += `🔴 ${o.title} (${nm(o.assigneeId)}), ${dur(st.hours)} overdue\n`; });
+  if (!over.length) t += 'None 👍\n';
+  t += `\n*Today's priorities:*\n`;
+  dueToday.forEach(o => t += `• ${o.title} (${nm(o.assigneeId)}), by ${o.due.slice(11)}\n`);
+  cs.forEach(c => { if (!['ontime','late'].includes(clState(c,T).key)) t += `• ${c.name} (${nm(c.assigneeId)}), by ${c.due}\n`; });
+  if (sc.length){
+    t += `\n*Top performers (7 days):* ` + sc.slice(0,3).map(x => `${x.p.name} ${x.s}%`).join(', ');
+    const low = sc.filter(x => x.s < 70).slice(-3).reverse();
+    if (low.length) t += `\n*Needs attention:* ` + low.map(x => `${x.p.name} ${x.s}%`).join(', ');
+  }
+  return t + `\n\n_Sent from Control Center_`;
+}
+V.huddle = () => {
+  const t = huddleText();
+  return `<h1>Morning huddle report</h1><div class="card"><p class="muted" style="margin-top:0">Generated automatically from yesterday's checklists, overdue tasks and scores. Read it in the morning meeting or send it to the team WhatsApp group.</p>
+    <pre class="rep" id="rep">${esc(t)}</pre><div class="row"><button class="btn" data-a="copyRep">Copy</button><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(t)}">Share on WhatsApp</a></div></div>`;
+};
+
+V.settings = () => `<h1>Settings</h1>
+  <div class="note">ℹ️ <b>Pilot mode:</b> data is saved in this browser only. To let every staff member use it on their own phone with shared data, the next step is connecting a cloud database.</div>
+  <div class="card"><h2>Business</h2><form data-form="company">
+    <label>Business name<input name="name" value="${esc(S.company.name)}" required></label>
+    <label>Stores (one per line)<textarea name="stores">${esc(S.company.stores.map(s => s.name).join('\n'))}</textarea></label>
+    <label>Departments (one per line)<textarea name="depts">${esc(S.company.departments.join('\n'))}</textarea></label>
+    <button class="btn pri">Save</button></form></div>
+  <div class="card"><h2>Data</h2><div class="row">
+    <button class="btn" data-a="export">⬇ Export backup</button>
+    <label class="btn" style="margin:0">⬆ Import backup<input type="file" accept="application/json" id="importF" hidden></label>
+    <button class="btn" data-a="resetDemo">Reload demo data</button>
+    <button class="btn danger" data-a="startBlank">Start blank (new business)</button></div>
+    <p class="muted">“Start blank” turns Control Center into an empty template for any business, so you can set it up for a new client or a new store.</p></div>`;
+
+/* ---------- modals / forms ---------- */
+const opts = (arr, sel) => arr.map(([v,l]) => `<option value="${esc(v)}" ${v===sel?'selected':''}>${esc(l)}</option>`).join('');
+function taskForm(t){
+  const vis = visibleIds().map(id => [id, nm(id)]);
+  t = t || {title:'', desc:'', assigneeId:'', due: today()+'T18:00', priority:'normal', proofRequired:true};
+  openModal(`<h2>${t.id?'Edit task':'New task'}</h2><form data-form="task" data-id="${t.id||''}">
+    <label>What needs to be done?<input name="title" value="${esc(t.title)}" required placeholder="e.g. Clear expired stock from rack 4"></label>
+    <label>Details<textarea name="desc" placeholder="Instructions, quantity, location…">${esc(t.desc)}</textarea></label>
+    <label>Owner (one person)<select name="assigneeId" required><option value="">Choose…</option>${opts(vis, t.assigneeId)}</select></label>
+    <label>Deadline<input type="datetime-local" name="due" value="${t.due}" required></label>
+    <label>Priority<select name="priority">${opts([['high','High'],['normal','Normal'],['low','Low']], t.priority)}</select></label>
+    <label class="check"><input type="checkbox" name="proof" ${t.proofRequired?'checked':''}> Photo or note required as proof</label>
+    <div class="row"><button class="btn pri">Save</button><button type="button" class="btn" data-a="close">Cancel</button></div></form>`);
+}
+function personForm(p){
+  p = p || {name:'', phone:'', roleId:S.roles.find(r => r.level==='staff')?.id, dept:S.company.departments[0], managerId:ownerP()?.id, shift:'09:00', active:true};
+  openModal(`<h2>${p.id?'Edit person':'Add person'}</h2><form data-form="person" data-id="${p.id||''}">
+    <label>Full name<input name="name" value="${esc(p.name)}" required></label>
+    <label>WhatsApp number<input name="phone" value="${esc(p.phone)}" inputmode="tel" placeholder="10-digit mobile"></label>
+    <label>Role<select name="roleId">${opts(S.roles.map(r => [r.id, r.name]), p.roleId)}</select></label>
+    <label>Department<select name="dept">${opts(S.company.departments.map(d => [d,d]), p.dept)}</select></label>
+    <label>Reports to<select name="managerId"><option value="">— nobody —</option>${opts(active().filter(x => x.id!==p.id).map(x => [x.id, x.name]), p.managerId)}</select></label>
+    <label>Shift start<input type="time" name="shift" value="${p.shift||'09:00'}"></label>
+    ${p.id && p.id!==ownerP()?.id?`<label class="check"><input type="checkbox" name="active" ${p.active!==false?'checked':''}> Active</label>`:''}
+    <div class="row"><button class="btn pri">Save</button><button type="button" class="btn" data-a="close">Cancel</button></div></form>`);
+}
+function roleForm(r){
+  r = r || {name:'', level:'staff', kras:[]};
+  openModal(`<h2>${r.id?'Edit role':'New role'}</h2><form data-form="role" data-id="${r.id||''}">
+    <label>Role name<input name="name" value="${esc(r.name)}" required></label>
+    <label>Access level<select name="level">${opts([['owner','Owner: sees everything'],['manager','Manager: sees own team'],['staff','Staff: sees own work']], r.level)}</select></label>
+    <label>KRAs: measurable results this role owns (one per line)<textarea name="kras">${esc(r.kras.join('\n'))}</textarea></label>
+    <div class="row"><button class="btn pri">Save</button><button type="button" class="btn" data-a="close">Cancel</button></div></form>`);
+}
+function clForm(c){
+  c = c || {name:'', assigneeId:'', due:'10:00', items:[]};
+  openModal(`<h2>${c.id?'Edit checklist':'New daily checklist'}</h2><form data-form="cl" data-id="${c.id||''}">
+    <label>Checklist name<input name="name" value="${esc(c.name)}" required></label>
+    <label>Owner<select name="assigneeId" required><option value="">Choose…</option>${opts(active().map(p => [p.id, p.name]), c.assigneeId)}</select></label>
+    <label>Must be submitted by<input type="time" name="due" value="${c.due}" required></label>
+    <label>Items (one per line; start a line with [photo] to require a photo)<textarea name="items" style="min-height:160px" required>${esc(c.items.map(i => (i.photo?'[photo] ':'')+i.text).join('\n'))}</textarea></label>
+    <div class="row"><button class="btn pri">Save</button><button type="button" class="btn" data-a="close">Cancel</button></div></form>`);
+}
+function runForm(cid){
+  const c = S.checklists.find(x => x.id === cid), T = today(), k = runKey(T, cid);
+  const r = S.runs[k] || {items:{}};
+  const ro = !!r.submittedAt || !(c.assigneeId === me().id || isBoss());
+  openModal(`<div class="row"><h2 class="sp" style="margin:0">${esc(c.name)}</h2>${stateBadge(clState(c,T))}</div>
+    <p class="muted">${esc(nm(c.assigneeId))} · ${fmtD(T)} · due ${c.due}${ro && !r.submittedAt ? ' · view only' : ''}</p>
+    ${c.items.map(i => { const v = r.items[i.id] || {};
+      return `<div class="item"><input type="checkbox" data-run="${cid}" data-item="${i.id}" ${v.done?'checked':''} ${ro?'disabled':''}>
+        <div class="sp">${esc(i.text)} ${i.photo?'<span class="badge b-info">📷 photo</span>':''}
+        ${i.photo && !ro ? `<div style="margin-top:6px"><label class="btn sm photo-btn">${v.photo?'Retake':'Take photo'}<input type="file" accept="image/*" capture="environment" hidden data-photo="${cid}" data-item="${i.id}"></label></div>`:''}
+        ${v.done && v.at ? `<div class="muted">✔ ${fmtT(v.at)}</div>`:''}</div>
+        ${v.photo?`<img class="thumb" src="${v.photo}" alt="">`:''}</div>`; }).join('')}
+    <div class="row" style="margin-top:14px">${ro ? '' : `<button class="btn pri" data-a="submitRun" data-id="${cid}">Submit checklist</button>`}<button class="btn" data-a="close">Close</button></div>`);
+}
+function clHistory(cid){
+  const c = S.checklists.find(x => x.id === cid);
+  const rows = [...Array(7)].map((_, i) => { const d = addDays(today(), -i); if (c.createdAt > d) return ''; const st = clState(c, d);
+    return `<tr><td>${fmtD(d)}</td><td>${stateBadge(st)}</td><td>${st.r?.submittedAt?fmtT(st.r.submittedAt):'—'}</td></tr>`; }).join('');
+  openModal(`<h2>${esc(c.name)}: last 7 days</h2><table><tr><th>Day</th><th>Status</th><th>Submitted</th></tr>${rows}</table><div class="row" style="margin-top:12px"><button class="btn" data-a="close">Close</button></div>`);
+}
+
+/* ---------- actions ---------- */
+const A = {
+  go: id => { VIEW = id; render(); window.scrollTo(0,0); },
+  close: closeModal,
+  tf: id => { TF.status = id; render(); },
+  newTask: () => taskForm(),
+  editTask: id => taskForm(S.tasks.find(t => t.id === id)),
+  delTask: id => { if (confirm('Delete this task?')){ S.tasks = S.tasks.filter(t => t.id !== id); save(); render(); } },
+  reopenTask: id => { const t = S.tasks.find(t => t.id === id); t.status = 'open'; delete t.doneAt; save(); render(); },
+  doneTask: id => { const t = S.tasks.find(t => t.id === id);
+    openModal(`<h2>Complete: ${esc(t.title)}</h2><form data-form="done" data-id="${id}">
+      <label>Proof photo ${t.proofRequired?'(photo or note required)':''}<input type="file" name="photo" accept="image/*" capture="environment"></label>
+      <label>Note<textarea name="note" placeholder="What was done?"></textarea></label>
+      <div class="row"><button class="btn pri">Mark as done</button><button type="button" class="btn" data-a="close">Cancel</button></div></form>`); },
+  viewImg: id => { const t = S.tasks.find(t => t.id === id); openModal(`<img src="${t.proof}" style="width:100%;border-radius:10px" alt="Proof"><div class="row" style="margin-top:10px"><button class="btn" data-a="close">Close</button></div>`); },
+  runCl: id => runForm(id),
+  clHist: id => clHistory(id),
+  editCl: id => clForm(id ? S.checklists.find(c => c.id === id) : null),
+  delCl: id => { if (confirm('Delete this checklist and its history?')){ S.checklists = S.checklists.filter(c => c.id !== id); save(); render(); } },
+  submitRun: id => {
+    const c = S.checklists.find(x => x.id === id), k = runKey(today(), id), r = S.runs[k] || {items:{}};
+    const missing = c.items.filter(i => !r.items[i.id]?.done), noPhoto = c.items.filter(i => i.photo && !r.items[i.id]?.photo);
+    if (missing.length) return toast(`${missing.length} item(s) not ticked yet`);
+    if (noPhoto.length) return toast(`${noPhoto.length} photo(s) still needed`);
+    r.submittedAt = Date.now(); r.by = me().id; S.runs[k] = r; save(); closeModal(); render(); toast('Checklist submitted ✔');
+  },
+  checkIn: id => { S.attendance[today()+'|'+id] = {in:Date.now(), out:null}; save(); render(); toast('Checked in'); },
+  checkOut: id => { const a = attOf(today(), id); if (a){ a.out = Date.now(); save(); render(); toast('Checked out'); } },
+  editPerson: id => personForm(id ? person(id) : null),
+  editRole: id => roleForm(id ? S.roles.find(r => r.id === id) : null),
+  copyRep: () => { navigator.clipboard?.writeText(huddleText()).then(() => toast('Copied'), () => toast('Copy failed: select the text manually')); },
+  export: () => { const b = new Blob([JSON.stringify(S, null, 1)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'control-center-backup-'+today()+'.json'; a.click(); },
+  resetDemo: () => { if (confirm('Replace ALL data with demo data?')){ S = seed(); save(); VIEW = 'home'; render(); toast('Demo data loaded'); } },
+  startBlank: () => { const n = prompt('Business name for the new, empty Control Center:', ''); if (n !== null && confirm('This erases all current data (export a backup first). Continue?')){ S = blank(n.trim()); save(); VIEW = 'team'; render(); toast('Blank template ready: add your people first'); } },
+};
+const F = {
+  task: (fd, f) => {
+    const id = f.dataset.id, d = {title:fd.get('title').trim(), desc:fd.get('desc').trim(), assigneeId:fd.get('assigneeId'), due:fd.get('due'), priority:fd.get('priority'), proofRequired:!!fd.get('proof')};
+    if (id) Object.assign(S.tasks.find(t => t.id === id), d);
+    else S.tasks.push({id:uid(), ...d, createdBy:me().id, status:'open', createdAt:Date.now()});
+    save(); closeModal(); render(); toast('Task saved');
+  },
+  done: async (fd, f) => {
+    const t = S.tasks.find(t => t.id === f.dataset.id), file = fd.get('photo'), note = fd.get('note').trim();
+    const photo = file && file.size ? await compress(file) : '';
+    if (t.proofRequired && !photo && !note) return toast('Add a photo or a note as proof');
+    Object.assign(t, {status:'done', doneAt:Date.now(), proof:photo, note, doneBy:me().id});
+    save(); closeModal(); render(); toast('Task completed ✔');
+  },
+  person: (fd, f) => {
+    const id = f.dataset.id;
+    const d = {name:fd.get('name').trim(), phone:fd.get('phone').trim(), roleId:fd.get('roleId'), dept:fd.get('dept'), managerId:fd.get('managerId'), shift:fd.get('shift')};
+    if (id){ const p = person(id); if (f.querySelector('[name=active]')) d.active = !!fd.get('active');
+      if (d.managerId && (d.managerId === id || descendants(id).includes(d.managerId))) return toast('A person cannot report to their own team member');
+      Object.assign(p, d); }
+    else S.people.push({id:'p_'+uid(), store:'s1', active:true, ...d});
+    save(); closeModal(); render(); toast('Saved');
+  },
+  role: (fd, f) => {
+    const id = f.dataset.id, d = {name:fd.get('name').trim(), level:fd.get('level'), kras:fd.get('kras').split('\n').map(s => s.trim()).filter(Boolean)};
+    if (id) Object.assign(S.roles.find(r => r.id === id), d); else S.roles.push({id:'r_'+uid(), ...d});
+    save(); closeModal(); render(); toast('Role saved');
+  },
+  cl: (fd, f) => {
+    const id = f.dataset.id, old = id ? S.checklists.find(c => c.id === id) : null;
+    const items = fd.get('items').split('\n').map(s => s.trim()).filter(Boolean).map(line => {
+      const photo = /^\[photo\]/i.test(line), text = line.replace(/^\[photo\]\s*/i, '');
+      const prev = old?.items.find(i => i.text === text);
+      return {id: prev?.id || uid(), text, photo};
+    });
+    const d = {name:fd.get('name').trim(), assigneeId:fd.get('assigneeId'), due:fd.get('due'), items};
+    if (old) Object.assign(old, d); else S.checklists.push({id:'c_'+uid(), createdAt:today(), ...d});
+    save(); closeModal(); render(); toast('Checklist saved');
+  },
+  company: fd => {
+    S.company.name = fd.get('name').trim();
+    const st = fd.get('stores').split('\n').map(s => s.trim()).filter(Boolean);
+    S.company.stores = st.map((n, i) => ({id: S.company.stores[i]?.id || 's'+uid(), name:n}));
+    const dp = fd.get('depts').split('\n').map(s => s.trim()).filter(Boolean);
+    S.company.departments = dp.length ? dp : ['Management'];
+    save(); render(); toast('Settings saved');
+  },
+};
+function compress(file){
+  return new Promise((res, rej) => { const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => { const k = Math.min(1, 480/Math.max(img.width, img.height)), w = Math.round(img.width*k), h = Math.round(img.height*k);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url); res(cv.toDataURL('image/jpeg', .55)); };
+    img.onerror = rej; img.src = url; });
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  if (e.target.id === 'modal') return closeModal();
+  const a = e.target.closest('[data-a]'); if (!a) return;
+  const fn = A[a.dataset.a]; if (fn){ e.preventDefault(); fn(a.dataset.id, a, e); }
+});
+document.addEventListener('submit', e => { const f = e.target; if (f.dataset.form && F[f.dataset.form]){ e.preventDefault(); F[f.dataset.form](new FormData(f), f); } });
+document.addEventListener('change', async e => {
+  const el = e.target;
+  if (el.id === 'userSel'){ S.currentUserId = el.value; TF.who = ''; save(); render(); return; }
+  if (el.id === 'whoF'){ TF.who = el.value; render(); return; }
+  if (el.id === 'importF' && el.files[0]){
+    try { const d = JSON.parse(await el.files[0].text()); if (!d.people || !d.company) throw 0; S = d; save(); render(); toast('Backup imported'); }
+    catch(_){ toast('That file is not a Control Center backup'); }
+    return;
+  }
+  const cid = el.dataset.run || el.dataset.photo; if (!cid) return;
+  const k = runKey(today(), cid); const r = S.runs[k] = S.runs[k] || {items:{}};
+  const v = r.items[el.dataset.item] = r.items[el.dataset.item] || {};
+  if (el.dataset.run){ v.done = el.checked; v.at = el.checked ? Date.now() : null; v.by = me().id; }
+  else if (el.files[0]){ try { v.photo = await compress(el.files[0]); v.done = true; v.at = v.at || Date.now(); } catch(_){ return toast('Could not read photo'); } }
+  save(); runForm(cid);
+});
+
+/* ---------- boot ---------- */
+S = load();
+if (!S || !S.people) { S = seed(); }
+if (!person(S.currentUserId)) S.currentUserId = ownerP()?.id || S.people[0].id;
+prunePhotos(); save(); render();
+setInterval(() => { if ($('#modal').classList.contains('hidden')) render(); }, 60000);
+</script>
+</body>
+</html>
